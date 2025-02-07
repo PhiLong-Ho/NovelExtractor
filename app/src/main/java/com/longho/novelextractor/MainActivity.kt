@@ -5,6 +5,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -23,6 +25,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,6 +57,37 @@ class MainActivity : ComponentActivity() {
             NovelExtractorScreen()
         }
     }
+
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
+    override fun onBackPressed() {
+        val webView = findWebViewInstance() // 🔹 Get WebView from Compose
+        if (webView?.canGoBack() == true) {
+            webView.goBack() // 🔹 Navigate back in WebView
+        } else {
+            super.onBackPressed() // 🔹 Exit app if no history
+        }
+    }
+
+    private fun findWebViewInstance(): WebView? {
+        return try {
+            (window.decorView.rootView as? ViewGroup)?.let { rootView ->
+                findWebViewRecursively(rootView)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun findWebViewRecursively(view: View): WebView? {
+        if (view is WebView) return view
+        if (view is ViewGroup) {
+            for (i in 0 until view.childCount) {
+                val webView = findWebViewRecursively(view.getChildAt(i))
+                if (webView != null) return webView
+            }
+        }
+        return null
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +105,13 @@ fun NovelExtractorScreen() {
             Column {
                 TopAppBar(
                     title = { Text("Novel Extractor") },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { if (webView.canGoBack()) webView.goBack() } // 🔹 Back Button
+                        ) {
+                            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    },
                     actions = {
                         IconButton(onClick = { webView.reload() }) {
                             Icon(
@@ -82,7 +123,6 @@ fun NovelExtractorScreen() {
                 )
                 AddressBar(
                     url = currentUrl,
-                    onUrlChange = { currentUrl = it },
                     onGoClick = { webView.loadUrl(it) }
                 )
             }
@@ -110,7 +150,7 @@ fun NovelExtractorScreen() {
 }
 
 @Composable
-fun AddressBar(url: String, onUrlChange: (String) -> Unit, onGoClick: (String) -> Unit) {
+fun AddressBar(url: String, onGoClick: (String) -> Unit) {
     var text by remember { mutableStateOf(url) }
 
     // 🔹 Ensure `text` updates when `url` changes externally
