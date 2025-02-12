@@ -3,7 +3,7 @@
     let content = "";
     let nextUrl = "";
 
-    if (window.location.hostname.includes("ncode.syosetu.com")) {
+    if (window.location.hostname.includes("syosetu.com")) {
         let titleElement = document.querySelector(".p-novel__title.p-novel__title--rensai, .p-novel__subtitle");
         let contentElement = document.querySelector(".p-novel__body, .js-novel-text.p-novel__text");
         let nextChapterElement = document.querySelector(".c-pager__item.c-pager__item--next");
