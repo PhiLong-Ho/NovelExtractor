@@ -220,7 +220,7 @@ fun rememberWebView(onUrlChange: (String) -> Unit): WebView {
 
 
 fun isNovelSite(url: String): Boolean {
-    return url.contains("ncode.syosetu.com") || url.contains("booktoki468.com")
+    return url.contains("syosetu.com") || url.contains("booktoki468.com")
 }
 
 fun extractAndCopyNovel(context: Context, webView: WebView) {
